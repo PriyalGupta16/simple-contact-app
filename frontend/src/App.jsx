@@ -6,47 +6,41 @@ function App() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
 
-  // 1. Fetch contacts on load
+  // BUG: Adding an invisible extra slash or a typo in the API path
+  // Real path: /api/contacts | Buggy path: /api/contact (missing 's')
+  const API_URL = 'https://simple-contact-app-s9vh.onrender.com/api/contact'; 
+
   useEffect(() => {
-    fetchData();
+    // This will likely fail or return empty, making the app look "broken"
+    axios.get(API_URL).then(res => setContacts(res.data)).catch(() => {});
   }, []);
 
-  const fetchData = () => {
-    axios.get('https://simple-contact-app-s9vh.onrender.com/api/contacts')
-      .then(res => setContacts(res.data));
-  };
-
-  // 2. Add Contact (No Email)
   const addContact = (e) => {
     e.preventDefault();
-    axios.post('https://simple-contact-app-s9vh.onrender.com/api/contacts', { name, phone })
+    // It looks like it's saving, but it hits a 404 error internally
+    axios.post(API_URL, { name, phone })
       .then(() => {
         setName(''); setPhone('');
-        fetchData();
-      });
-  };
-
-  // 3. Delete Contact (To clean up your list)
-  const deleteContact = (id) => {
-    axios.delete(`https://simple-contact-app-s9vh.onrender.com/api/contacts/${id}`)
-      .then(() => fetchData());
+        // This refresh will also fail
+        axios.get(API_URL).then(res => setContacts(res.data)).catch(() => {});
+      }).catch(err => console.log("System error")); 
   };
 
   return (
-    <div style={{ padding: "40px", textAlign: "center", fontFamily: "Arial" }}>
-      <h1>Contact List</h1>
-      
-      <form onSubmit={addContact} style={{ marginBottom: "30px", border: "1px solid black", padding: "20px", display: "inline-block" }}>
-        <input placeholder="Name" value={name} onChange={e => setName(e.target.value)} required /><br/><br/>
-        <input placeholder="Phone" value={phone} onChange={e => setPhone(e.target.value)} required /><br/><br/>
-        <button type="submit">Submit</button>
-      </form>
+    <div style={{ padding: "50px", textAlign: "center", fontFamily: "serif" }}>
+      <h2>Contact Directory</h2>
+      <div style={{ border: "1px solid #000", padding: "20px", display: "inline-block" }}>
+        <form onSubmit={addContact}>
+          <input placeholder="Enter Name" value={name} onChange={e => setName(e.target.value)} /><br/><br/>
+          <input placeholder="Enter Phone" value={phone} onChange={e => setPhone(e.target.value)} /><br/><br/>
+          <button type="submit">Save Entry</button>
+        </form>
+      </div>
 
-      <div style={{ maxWidth: "300px", margin: "0 auto" }}>
-        {contacts.map(c => (
-          <div key={c._id} style={{ border: "1px solid #ccc", margin: "10px 0", padding: "10px", display: "flex", justifyContent: "space-between" }}>
-            <span>{c.name}: {c.phone}</span>
-            <button onClick={() => deleteContact(c._id)} style={{ color: "red", border: "none", background: "none", cursor: "pointer" }}>Delete</button>
+      <div style={{ marginTop: "20px" }}>
+        {contacts.length === 0 ? <p>No records found.</p> : contacts.map(c => (
+          <div key={c._id} style={{ borderBottom: "1px solid #eee" }}>
+            {c.name} - {c.phone}
           </div>
         ))}
       </div>
