@@ -8,15 +8,15 @@ function App() {
   const [phone, setPhone] = useState('');
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/contacts').then(res => setContacts(res.data));
+    axios.get('https://simple-contact-app-s9vh.onrender.com/api/contacts').then(res => setContacts(res.data));
   }, []);
 
   const addContact = (e) => {
     e.preventDefault();
-    axios.post('http://localhost:5000/api/contacts', { name, email, phone })
+    axios.post('https://simple-contact-app-s9vh.onrender.com/api/contacts', { name, email, phone })
       .then(() => {
         setName(''); setEmail(''); setPhone('');
-        axios.get('http://localhost:5000/api/contacts').then(res => setContacts(res.data));
+        axios.get('https://simple-contact-app-s9vh.onrender.com/api/contacts').then(res => setContacts(res.data));
       });
   };
 
